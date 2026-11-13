@@ -41,7 +41,7 @@ jobs:
       - name: Analyze source with Bandit
         run: bandit -r app -c pyproject.toml
       - name: Check dependencies for known vulnerabilities
-        run: pip-audit
+        run: pip-audit --skip-editable
 
   build:
     name: Build Python package

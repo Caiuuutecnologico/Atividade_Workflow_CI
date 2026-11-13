@@ -1,5 +1,6 @@
 import os
 from collections.abc import Generator
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy import create_engine, select
@@ -36,7 +37,9 @@ def create_app(database_url: str | None = None) -> FastAPI:
         return {"status": "ok"}
 
     @app.post("/tasks", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
-    def create_task(payload: TaskCreate, session: Session = Depends(get_session)) -> Task:
+    def create_task(
+        payload: TaskCreate, session: Annotated[Session, Depends(get_session)]
+    ) -> Task:
         task = Task(title=payload.title.strip(), description=payload.description)
         session.add(task)
         session.commit()
@@ -44,11 +47,13 @@ def create_app(database_url: str | None = None) -> FastAPI:
         return task
 
     @app.get("/tasks", response_model=list[TaskRead])
-    def list_tasks(session: Session = Depends(get_session)) -> list[Task]:
+    def list_tasks(session: Annotated[Session, Depends(get_session)]) -> list[Task]:
         return list(session.scalars(select(Task).order_by(Task.id)))
 
     @app.get("/tasks/{task_id}", response_model=TaskRead)
-    def get_task(task_id: int, session: Session = Depends(get_session)) -> Task:
+    def get_task(
+        task_id: int, session: Annotated[Session, Depends(get_session)]
+    ) -> Task:
         task = session.get(Task, task_id)
         if task is None:
             raise HTTPException(status_code=404, detail="Tarefa não encontrada")
@@ -56,7 +61,9 @@ def create_app(database_url: str | None = None) -> FastAPI:
 
     @app.patch("/tasks/{task_id}", response_model=TaskRead)
     def update_task(
-        task_id: int, payload: TaskUpdate, session: Session = Depends(get_session)
+        task_id: int,
+        payload: TaskUpdate,
+        session: Annotated[Session, Depends(get_session)],
     ) -> Task:
         task = session.get(Task, task_id)
         if task is None:
@@ -68,7 +75,9 @@ def create_app(database_url: str | None = None) -> FastAPI:
         return task
 
     @app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-    def delete_task(task_id: int, session: Session = Depends(get_session)) -> None:
+    def delete_task(
+        task_id: int, session: Annotated[Session, Depends(get_session)]
+    ) -> None:
         task = session.get(Task, task_id)
         if task is None:
             raise HTTPException(status_code=404, detail="Tarefa não encontrada")

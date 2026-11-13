@@ -37,9 +37,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
         return {"status": "ok"}
 
     @app.post("/tasks", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
-    def create_task(
-        payload: TaskCreate, session: Annotated[Session, Depends(get_session)]
-    ) -> Task:
+    def create_task(payload: TaskCreate, session: Annotated[Session, Depends(get_session)]) -> Task:
         task = Task(title=payload.title.strip(), description=payload.description)
         session.add(task)
         session.commit()
@@ -51,9 +49,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
         return list(session.scalars(select(Task).order_by(Task.id)))
 
     @app.get("/tasks/{task_id}", response_model=TaskRead)
-    def get_task(
-        task_id: int, session: Annotated[Session, Depends(get_session)]
-    ) -> Task:
+    def get_task(task_id: int, session: Annotated[Session, Depends(get_session)]) -> Task:
         task = session.get(Task, task_id)
         if task is None:
             raise HTTPException(status_code=404, detail="Tarefa não encontrada")
@@ -75,9 +71,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
         return task
 
     @app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-    def delete_task(
-        task_id: int, session: Annotated[Session, Depends(get_session)]
-    ) -> None:
+    def delete_task(task_id: int, session: Annotated[Session, Depends(get_session)]) -> None:
         task = session.get(Task, task_id)
         if task is None:
             raise HTTPException(status_code=404, detail="Tarefa não encontrada")
